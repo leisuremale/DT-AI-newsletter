@@ -1,0 +1,548 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AI Daily · Terminal Edition</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Caveat:wght@400;600&family=Noto+Sans+SC:wght@400;600;700&family=Noto+Serif+SC:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #0a0e0a; font-family: "JetBrains Mono", ui-monospace, monospace; color: #d4e0d4; font-size: 13px; line-height: 1.55; }
+  a { color: inherit; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .page { max-width: 760px; margin: 0 auto; background: #0a0e0a; min-height: 100vh; padding: 40px 44px 60px; }
+  .masthead { border-top: 3px solid #d4e0d4; border-bottom: 1px solid #d4e0d4; padding: 14px 0 18px; margin-bottom: 28px; }
+  .masthead h1 { margin: 0; font-family: "Noto Serif SC", Georgia, serif; font-weight: 500; font-style: italic; font-size: 56px; line-height: 0.95; letter-spacing: -0.03em; color: #d4e0d4; }
+  .masthead h1 .accent { color: #7fffd4; }
+  .masthead .tagline { margin-top: 10px; font-family: "Caveat", cursive; font-size: 20px; color: #7fffd4; transform: rotate(-1deg); display: inline-block; }
+  @keyframes blink { to { visibility: hidden; } }
+  section { margin-bottom: 24px; }
+  .panel { border: 1px solid #2a382a; border-radius: 4px; background: #0d120d; }
+  .panel-hd { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid #2a382a; background: #111f18; }
+  .panel-hd .num { font-family: "Noto Serif SC", Georgia, serif; font-style: italic; font-weight: 500; color: #7fffd4; font-size: 22px; line-height: 1; }
+  .panel-hd .title { font-family: "Noto Sans SC", sans-serif; font-weight: 600; font-size: 15px; white-space: nowrap; color: #d4e0d4; }
+
+  .panel-body { padding: 12px 14px; }
+  .item { padding: 8px 0; border-bottom: 1px dashed #2a382a; }
+  .item:last-child { border-bottom: none; }
+  .item-head { display: flex; align-items: baseline; gap: 8px; }
+  .item-head .marker { color: #7fffd4; width: 16px; flex-shrink: 0; }
+  .item-title { font-family: "Noto Sans SC", sans-serif; font-weight: 600; font-size: 14px; line-height: 1.35; flex: 1; color: #d4e0d4; }
+  .item-blurb { font-family: "Noto Sans SC", sans-serif; color: #a0b8a0; font-size: 12px; line-height: 1.6; padding-left: 24px; margin-top: 3px; }
+  .item-meta { padding-left: 24px; margin-top: 4px; font-size: 10px; color: #6a806a; }
+  .item-meta .src { color: #7fffd4; }
+  .item-meta .time { color: #a0b8a0; margin-left: 6px; }
+  .repo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .repo-card { border: 1px dashed #2a382a; padding: 11px; border-radius: 3px; background: #0c1410; }
+  .repo-name { color: #7fffd4; font-weight: 700; font-size: 12px; word-break: break-all; }
+  .repo-name::before { content: "git:("; color: #6a806a; }
+  .repo-name::after  { content: ")"; color: #6a806a; }
+  .repo-blurb { font-family: "Noto Sans SC", sans-serif; color: #a0b8a0; font-size: 11.5px; line-height: 1.5; margin: 6px 0 8px; }
+  .repo-meta { font-size: 10px; color: #a0b8a0; display: flex; gap: 8px; flex-wrap: wrap; }
+  .repo-meta .stars { color: #7fffd4; font-weight: 600; }
+  .repo-meta .lang-dot { width: 7px; height: 7px; border-radius: 50%; background: #7fffd4; display: inline-block; vertical-align: middle; margin-right: 4px; }
+  .skill-row { display: flex; align-items: baseline; gap: 10px; padding: 7px 0; border-bottom: 1px dashed #2a382a; font-size: 12px; }
+  .skill-row:last-child { border-bottom: none; }
+  .skill-rank { color: #6a806a; width: 22px; }
+  .skill-name { color: #7fffd4; font-weight: 600; width: 150px; flex-shrink: 0; }
+  .skill-blurb { flex: 1; color: #a0b8a0; font-family: "Noto Sans SC", sans-serif; line-height: 1.5; }
+  .skill-uses { color: #d4e0d4; white-space: nowrap; }
+  .skill-author { color: #6a806a; font-size: 10px; margin-left: 4px; }
+  .tip { padding: 10px 0; border-bottom: 1px dashed #2a382a; }
+  .tip:last-child { border-bottom: none; }
+  .tip-head { font-family: "Noto Sans SC", sans-serif; font-weight: 600; font-size: 13.5px; color: #d4e0d4; }
+  .tip-head .sigil { color: #7fffd4; margin-right: 6px; font-family: "JetBrains Mono", monospace; }
+  .tip-body { font-family: "Noto Sans SC", sans-serif; color: #a0b8a0; font-size: 12px; line-height: 1.6; padding-left: 18px; margin-top: 4px; }
+  .tip-code { display: inline-block; background: #1a3028; color: #7fffd4; padding: 1px 6px; border-radius: 3px; font-family: "JetBrains Mono", monospace; font-size: 11px; }
+  .tok-row { display: grid; grid-template-columns: 24px 1fr; gap: 12px; align-items: center; padding: 6px 0; border-bottom: 1px dashed #2a382a; }
+  .tok-row:last-child { border-bottom: none; }
+  .tok-rank { font-family: "Noto Serif SC", serif; font-style: italic; font-weight: 500; color: #6a806a; font-size: 16px; text-align: right; }
+  .tok-row.top .tok-rank { color: #7fffd4; }
+  .tok-body { min-width: 0; }
+  .tok-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+  .tok-model { font-family: "Noto Sans SC", sans-serif; font-weight: 600; font-size: 13px; color: #d4e0d4; }
+  .tok-vendor { color: #a0b8a0; font-size: 10px; margin-left: 6px; }
+  .tok-tokens { font-variant-numeric: tabular-nums; font-size: 12px; font-weight: 600; color: #d4e0d4; }
+  .tok-change { font-size: 10px; margin-left: 6px; }
+  .tok-change.up { color: #7fffd4; }
+  .tok-change.dn { color: #ff7a8a; }
+  .tok-bar { height: 4px; background: #122018; border-radius: 2px; overflow: hidden; }
+  .tok-bar > div { height: 100%; background: #7fffd4; border-radius: 2px; }
+  .tok-row:not(.top) .tok-bar > div { background: #3a8060; }
+  .sec-item { padding: 11px 12px; margin-bottom: 9px; border: 1px solid #2a382a; border-radius: 3px; }
+  .sec-item:last-child { margin-bottom: 0; }
+  .sec-item.high   { border-color: #cc3a3a; background: #1c0808; }
+  .sec-item.medium { border-color: #c47820; background: #1a1508; }
+  .sec-item.low    { border-color: #6a7acc; background: #0e1020; }
+  .sec-head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px; }
+  .sec-badge { font-family: "JetBrains Mono", monospace; font-size: 9px; letter-spacing: .12em; font-weight: 700; padding: 3px 7px; border-radius: 2px; color: #0a0e0a; white-space: nowrap; }
+  .sec-item.high   .sec-badge { background: #ff5c5c; }
+  .sec-item.medium .sec-badge { background: #ffb02e; }
+  .sec-item.low    .sec-badge { background: #8aa4ff; }
+  .sec-title { font-family: "Noto Sans SC", sans-serif; font-weight: 600; font-size: 13.5px; line-height: 1.3; color: #d4e0d4; }
+  .sec-blurb { font-family: "Noto Sans SC", sans-serif; color: #a0b8a0; font-size: 12px; line-height: 1.6; }
+  .footer { margin-top: 36px; padding-top: 16px; border-top: 1px solid #2a382a; display: flex; justify-content: space-between; font-size: 10px; color: #a0b8a0; letter-spacing: .08em; text-transform: uppercase; }
+  .footer .prompt { color: #7fffd4; }
+  @media (max-width: 560px) { .page { padding: 24px 20px; } .masthead h1 { font-size: 38px; } .repo-grid { grid-template-columns: 1fr; } .skill-name { width: auto; } }
+</style>
+</head>
+<body bgcolor="#0a0e0a" text="#d4e0d4">
+<!--[if mso]><table align="center" width="760" cellpadding="0" cellspacing="0" border="0" bgcolor="#0a0e0a"><tr><td><![endif]-->
+<div class="page">
+
+  <header class="masthead">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:14px;">
+    <tr>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#a0b8a0;white-space:nowrap;">第 048 期</td>
+      <td align="center" style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#a0b8a0;"><span style="color:#7fffd4;">▸</span> DAILY · AI · TERMINAL</td>
+      <td align="right" style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#a0b8a0;white-space:nowrap;">2026 / 04 / 24</td>
+    </tr>
+    </table>
+    <!--[if mso]><div style="margin:0;padding:0;font-family:Georgia,'Times New Roman',serif;font-weight:normal;font-style:italic;font-size:42pt;line-height:1.0;color:#d4e0d4;mso-line-height-rule:exactly;">今日 <span style="color:#7fffd4;">AI</span> 简报</div><![endif]-->
+    <!--[if !mso]><!-->
+    <h1>今日 <span class="accent">AI</span> 简报</h1>
+    <!--<![endif]-->
+    <!--[if mso]><div style="margin-top:10px;font-family:'Microsoft YaHei','SimSun',sans-serif;font-size:18px;color:#7fffd4;">— 每日一份，写给 GLP DT 团队的 AI 简报</div><![endif]-->
+    <!--[if !mso]><!-->
+    <div class="tagline">— 每日一份，写给 GLP DT 团队的 AI 简报</div>
+    <!--<![endif]-->
+    <div style="height:14px;line-height:14px;font-size:14px;">&nbsp;</div>
+  </header>
+
+  <!-- 01 AI NEWS -->
+  <section>
+    <div class="panel" style="border:1px solid #2a382a;background:#0d120d;">
+      <!--[if mso]>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#111f18" style="background:#111f18;border-bottom:1px solid #2a382a;">
+      <tr valign="middle">
+        <td width="44" style="padding:10px 0 10px 14px;font-family:'Noto Serif SC',Georgia,serif;font-style:italic;font-weight:500;color:#7fffd4;font-size:22px;line-height:1;white-space:nowrap;">01</td>
+        <td style="padding:10px 0;font-family:'Noto Sans SC',sans-serif;font-weight:600;font-size:15px;color:#d4e0d4;white-space:nowrap;">AI 热门要闻</td>
+      </tr></table>
+      <![endif]-->
+      <!--[if !mso]><!-->
+      <div class="panel-hd"><span class="num">01</span><span class="title">AI 热门要闻</span></div>
+      <!--<![endif]-->
+      <!--[if mso]><table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="padding:12px 14px;"><![endif]-->
+      <div class="panel-body">
+
+        <div class="item">
+          <!--[if mso]>
+          <table width="100%" cellpadding="0" cellspacing="0" border="0"><tr valign="top">
+            <td width="20" style="color:#7fffd4;padding-top:2px;white-space:nowrap;">◆</td>
+            <td><a href="https://www.anthropic.com/news" style="font-family:'Noto Sans SC',sans-serif;font-weight:600;font-size:14px;line-height:1.35;color:#d4e0d4;text-decoration:none;">Anthropic 发布 Claude Mythos 5，首个万亿参数模型</a></td>
+          </tr></table>
+          <![endif]-->
+          <!--[if !mso]><!-->
+          <div class="item-head"><span class="marker">◆</span><div class="item-title"><a href="https://www.anthropic.com/news">Anthropic 发布 Claude Mythos 5，首个万亿参数模型</a></div></div>
+          <!--<![endif]-->
+          <div class="item-blurb">Claude Mythos 5 达到 10 万亿参数，专为网络安全、学术研究和复杂编码设计，是首个获广泛认可的万亿级模型，已达到 ASL-4 安全等级。</div>
+          <div class="item-meta">→ <span class="src">Anthropic</span><span class="time">[6h ago]</span></div>
+        </div>
+
+        <div class="item">
+          <!--[if mso]>
+          <table width="100%" cellpadding="0" cellspacing="0" border="0"><tr valign="top">
+            <td width="20" style="color:#7fffd4;padding-top:2px;white-space:nowrap;">◆</td>
+            <td><a href="https://openai.com/blog" style="font-family:'Noto Sans SC',sans-serif;font-weight:600;font-size:14px;line-height:1.35;color:#d4e0d4;text-decoration:none;">OpenAI 发布 GPT-5.5，性能全面超越前代</a></td>
+          </tr></table>
+          <![endif]-->
+          <!--[if !mso]><!-->
+          <div class="item-head"><span class="marker">◆</span><div class="item-title"><a href="https://openai.com/blog">OpenAI 发布 GPT-5.5，性能全面超越前代</a></div></div>
+          <!--<![endif]-->
+          <div class="item-blurb">GPT-5.5 在保持与 GPT-5.4 相同延迟的同时，智能水平大幅提升。OpenAI 年化营收已突破 250 亿美元，并传出最快 2026 年底 IPO 计划。</div>
+          <div class="item-meta">→ <span class="src">OpenAI Blog</span><span class="time">[8h ago]</span></div>
+        </div>
+
+        <div class="item">
+          <!--[if mso]>
+          <table width="100%" cellpadding="0" cellspacing="0" border="0"><tr valign="top">
+            <td width="20" style="color:#7fffd4;padding-top:2px;white-space:nowrap;">◆</td>
+            <td><a href="https://techcrunch.com" style="font-family:'Noto Sans SC',sans-serif;font-weight:600;font-size:14px;line-height:1.35;color:#d4e0d4;text-decoration:none;">Google Cloud Next：A2A 协议发布，全面押注 AI Agent</a></td>
+          </tr></table>
+          <![endif]-->
+          <!--[if !mso]><!-->
+          <div class="item-head"><span class="marker">◆</span><div class="item-title"><a href="https://techcrunch.com">Google Cloud Next：A2A 协议发布，全面押注 AI Agent</a></div></div>
+          <!--<![endif]-->
+          <div class="item-blurb">Google 发布跨平台 Agent2Agent 通信协议，同步推出无代码 Agent Builder、Project Mariner 网页浏览 Agent 和含 200+ 模型的开发者平台，全面对抗 OpenAI 和 Anthropic。</div>
+          <div class="item-meta">→ <span class="src">TechCrunch</span><span class="time">[10h ago]</span></div>
+        </div>
+
+        <div class="item">
+          <!--[if mso]>
+          <table width="100%" cellpadding="0" cellspacing="0" border="0"><tr valign="top">
+            <td width="20" style="color:#7fffd4;padding-top:2px;white-space:nowrap;">◆</td>
+            <td><a href="https://www.fool.com/investing/2026/04/22/anthropic-just-announced-huge-news-for-alphabet-an/" style="font-family:'Noto Sans SC',sans-serif;font-weight:600;font-size:14px;line-height:1.35;color:#d4e0d4;text-decoration:none;">Anthropic 与亚马逊签约锁定 5GW 算力</a></td>
+          </tr></table>
+          <![endif]-->
+          <!--[if !mso]><!-->
+          <div class="item-head"><span class="marker">◆</span><div class="item-title"><a href="https://www.fool.com/investing/2026/04/22/anthropic-just-announced-huge-news-for-alphabet-an/">Anthropic 与亚马逊签约锁定 5GW 算力</a></div></div>
+          <!--<![endif]-->
+          <div class="item-blurb">Anthropic 宣布 2027 年起使用多吉瓦下一代 TPU，并与亚马逊签署协议锁定 5GW 容量用于 Claude 训练与部署，年化营收已接近 190 亿美元。</div>
+          <div class="item-meta">→ <span class="src">The Motley Fool</span><span class="time">[12h ago]</span></div>
+        </div>
+
+        <div class="item">
+          <!--[if mso]>
+          <table width="100%" cellpadding="0" cellspacing="0" border="0"><tr valign="top">
+            <td width="20" style="color:#7fffd4;padding-top:2px;white-space:nowrap;">◆</td>
+            <td><a href="https://techcrunch.com/2026/04/22/exclusive-google-deepens-thinking-machines-lab-ties-with-new-multi-billion-dollar-deal/" style="font-family:'Noto Sans SC',sans-serif;font-weight:600;font-size:14px;line-height:1.35;color:#d4e0d4;text-decoration:none;">Mira Murati 旗下 Thinking Machines Lab 获 Google 数十亿合约</a></td>
+          </tr></table>
+          <![endif]-->
+          <!--[if !mso]><!-->
+          <div class="item-head"><span class="marker">◆</span><div class="item-title"><a href="https://techcrunch.com/2026/04/22/exclusive-google-deepens-thinking-machines-lab-ties-with-new-multi-billion-dollar-deal/">Mira Murati 旗下 Thinking Machines Lab 获 Google 数十亿合约</a></div></div>
+          <!--<![endif]-->
+          <div class="item-blurb">前 OpenAI 高管 Mira Murati 创立的公司与 Google Cloud 签署多年合约，访问基于 Nvidia GB300 芯片的 AI 基础设施，合约金额达数十亿美元。</div>
+          <div class="item-meta">→ <span class="src">TechCrunch</span><span class="time">[1d ago]</span></div>
+        </div>
+
+      </div>
+      <!--[if mso]></td></tr></table><![endif]-->
+    </div>
+  </section>
+
+  <!-- 02 GITHUB TRENDING -->
+  <section>
+    <div class="panel" style="border:1px solid #2a382a;background:#0d120d;">
+      <!--[if mso]>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#111f18" style="background:#111f18;border-bottom:1px solid #2a382a;">
+      <tr valign="middle">
+        <td width="44" style="padding:10px 0 10px 14px;font-family:'Noto Serif SC',Georgia,serif;font-style:italic;font-weight:500;color:#7fffd4;font-size:22px;line-height:1;white-space:nowrap;">02</td>
+        <td style="padding:10px 0;font-family:'Noto Sans SC',sans-serif;font-weight:600;font-size:15px;color:#d4e0d4;white-space:nowrap;">GitHub 飙升榜</td>
+      </tr></table>
+      <![endif]-->
+      <!--[if !mso]><!-->
+      <div class="panel-hd"><span class="num">02</span><span class="title">GitHub 飙升榜</span></div>
+      <!--<![endif]-->
+      <!--[if mso]><table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="padding:12px 14px;"><![endif]-->
+      <div class="panel-body">
+
+        <!--[if mso]>
+        <table width="100%" cellpadding="0" cellspacing="0" border="0">
+          <tr valign="top">
+            <td width="50%" style="padding:0 5px 10px 0;vertical-align:top;">
+              <div style="border:1px dashed #2a382a;padding:11px;background:#0c1410;">
+                <div style="font-size:12px;"><span style="color:#6a806a;">git:(</span><a href="https://github.com/Z4nzu/hackingtool" style="color:#7fffd4;font-weight:700;text-decoration:none;">Z4nzu/hackingtool</a><span style="color:#6a806a;">)</span></div>
+                <div style="font-family:'Noto Sans SC',sans-serif;color:#a0b8a0;font-size:11.5px;line-height:1.5;margin:6px 0 8px;">一站式渗透测试工具集，覆盖信息收集、漏洞扫描、密码破解等全流程安全测试场景。</div>
+                <table cellpadding="0" cellspacing="0" border="0"><tr>
+                  <td style="font-size:10px;color:#7fffd4;font-weight:600;padding-right:8px;white-space:nowrap;">★ +1.4k</td>
+                  <td style="font-size:10px;color:#a0b8a0;padding-right:8px;white-space:nowrap;">/ 61.3k</td>
+                  <td style="font-size:10px;color:#a0b8a0;white-space:nowrap;">Python</td>
+                </tr></table>
+              </div>
+            </td>
+            <td width="50%" style="padding:0 0 10px 5px;vertical-align:top;">
+              <div style="border:1px dashed #2a382a;padding:11px;background:#0c1410;">
+                <div style="font-size:12px;"><span style="color:#6a806a;">git:(</span><a href="https://github.com/zilliztech/claude-context" style="color:#7fffd4;font-weight:700;text-decoration:none;">zilliztech/claude-context</a><span style="color:#6a806a;">)</span></div>
+                <div style="font-family:'Noto Sans SC',sans-serif;color:#a0b8a0;font-size:11.5px;line-height:1.5;margin:6px 0 8px;">为 AI 编码 Agent 提供完整代码库上下文的搜索工具，让模型精准定位相关代码片段。</div>
+                <table cellpadding="0" cellspacing="0" border="0"><tr>
+                  <td style="font-size:10px;color:#7fffd4;font-weight:600;padding-right:8px;white-space:nowrap;">★ +1.0k</td>
+                  <td style="font-size:10px;color:#a0b8a0;padding-right:8px;white-space:nowrap;">/ 8.5k</td>
+                  <td style="font-size:10px;color:#a0b8a0;white-space:nowrap;">TypeScript</td>
+                </tr></table>
+              </div>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td width="50%" style="padding:0 5px 10px 0;vertical-align:top;">
+              <div style="border:1px dashed #2a382a;padding:11px;background:#0c1410;">
+                <div style="font-size:12px;"><span style="color:#6a806a;">git:(</span><a href="https://github.com/huggingface/ml-intern" style="color:#7fffd4;font-weight:700;text-decoration:none;">huggingface/ml-intern</a><span style="color:#6a806a;">)</span></div>
+                <div style="font-family:'Noto Sans SC',sans-serif;color:#a0b8a0;font-size:11.5px;line-height:1.5;margin:6px 0 8px;">开源 ML 工程师 Agent，自动阅读最新论文、训练模型并发布成果，无需人工干预。</div>
+                <table cellpadding="0" cellspacing="0" border="0"><tr>
+                  <td style="font-size:10px;color:#7fffd4;font-weight:600;padding-right:8px;white-space:nowrap;">★ +720</td>
+                  <td style="font-size:10px;color:#a0b8a0;padding-right:8px;white-space:nowrap;">/ 3.7k</td>
+                  <td style="font-size:10px;color:#a0b8a0;white-space:nowrap;">Python</td>
+                </tr></table>
+              </div>
+            </td>
+            <td width="50%" style="padding:0 0 10px 5px;vertical-align:top;">
+              <div style="border:1px dashed #2a382a;padding:11px;background:#0c1410;">
+                <div style="font-size:12px;"><span style="color:#6a806a;">git:(</span><a href="https://github.com/HKUDS/RAG-Anything" style="color:#7fffd4;font-weight:700;text-decoration:none;">HKUDS/RAG-Anything</a><span style="color:#6a806a;">)</span></div>
+                <div style="font-family:'Noto Sans SC',sans-serif;color:#a0b8a0;font-size:11.5px;line-height:1.5;margin:6px 0 8px;">全能 RAG 框架，支持文档、图像、表格多模态检索增强生成，开箱即用。</div>
+                <table cellpadding="0" cellspacing="0" border="0"><tr>
+                  <td style="font-size:10px;color:#7fffd4;font-weight:600;padding-right:8px;white-space:nowrap;">★ +590</td>
+                  <td style="font-size:10px;color:#a0b8a0;padding-right:8px;white-space:nowrap;">/ 18.3k</td>
+                  <td style="font-size:10px;color:#a0b8a0;white-space:nowrap;">Python</td>
+                </tr></table>
+              </div>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td width="50%" style="padding:0 5px 0 0;vertical-align:top;">
+              <div style="border:1px dashed #2a382a;padding:11px;background:#0c1410;">
+                <div style="font-size:12px;"><span style="color:#6a806a;">git:(</span><a href="https://github.com/ruvnet/RuView" style="color:#7fffd4;font-weight:700;text-decoration:none;">ruvnet/RuView</a><span style="color:#6a806a;">)</span></div>
+                <div style="font-family:'Noto Sans SC',sans-serif;color:#a0b8a0;font-size:11.5px;line-height:1.5;margin:6px 0 8px;">基于 WiFi 信号的无摄像头人体姿态实时估计，保护隐私同时实现全屋监控。</div>
+                <table cellpadding="0" cellspacing="0" border="0"><tr>
+                  <td style="font-size:10px;color:#7fffd4;font-weight:600;padding-right:8px;white-space:nowrap;">★ +429</td>
+                  <td style="font-size:10px;color:#a0b8a0;padding-right:8px;white-space:nowrap;">/ 49.9k</td>
+                  <td style="font-size:10px;color:#a0b8a0;white-space:nowrap;">Rust</td>
+                </tr></table>
+              </div>
+            </td>
+            <td width="50%" style="padding:0 0 0 5px;vertical-align:top;">
+              <div style="border:1px dashed #2a382a;padding:11px;background:#0c1410;">
+                <div style="font-size:12px;"><span style="color:#6a806a;">git:(</span><a href="https://github.com/Anil-matcha/Open-Generative-AI" style="color:#7fffd4;font-weight:700;text-decoration:none;">Anil-matcha/Open-Generative-AI</a><span style="color:#6a806a;">)</span></div>
+                <div style="font-family:'Noto Sans SC',sans-serif;color:#a0b8a0;font-size:11.5px;line-height:1.5;margin:6px 0 8px;">开源 AI 图像视频生成平台，集成 200+ 模型，无审查，支持本地私有化部署。</div>
+                <table cellpadding="0" cellspacing="0" border="0"><tr>
+                  <td style="font-size:10px;color:#7fffd4;font-weight:600;padding-right:8px;white-space:nowrap;">★ +316</td>
+                  <td style="font-size:10px;color:#a0b8a0;padding-right:8px;white-space:nowrap;">/ 7.1k</td>
+                  <td style="font-size:10px;color:#a0b8a0;white-space:nowrap;">JavaScript</td>
+                </tr></table>
+              </div>
+            </td>
+          </tr>
+        </table>
+        <![endif]-->
+        <!--[if !mso]><!-->
+        <div class="repo-grid">
+          <div class="repo-card"><div class="repo-name"><a href="https://github.com/Z4nzu/hackingtool">Z4nzu/hackingtool</a></div><div class="repo-blurb">一站式渗透测试工具集，覆盖信息收集、漏洞扫描、密码破解等全流程安全测试场景。</div><div class="repo-meta"><span class="stars">★ +1.4k</span><span>/ 61.3k</span><span><span class="lang-dot"></span>Python</span></div></div>
+          <div class="repo-card"><div class="repo-name"><a href="https://github.com/zilliztech/claude-context">zilliztech/claude-context</a></div><div class="repo-blurb">为 AI 编码 Agent 提供完整代码库上下文的搜索工具，让模型精准定位相关代码片段。</div><div class="repo-meta"><span class="stars">★ +1.0k</span><span>/ 8.5k</span><span><span class="lang-dot"></span>TypeScript</span></div></div>
+          <div class="repo-card"><div class="repo-name"><a href="https://github.com/huggingface/ml-intern">huggingface/ml-intern</a></div><div class="repo-blurb">开源 ML 工程师 Agent，自动阅读最新论文、训练模型并发布成果，无需人工干预。</div><div class="repo-meta"><span class="stars">★ +720</span><span>/ 3.7k</span><span><span class="lang-dot"></span>Python</span></div></div>
+          <div class="repo-card"><div class="repo-name"><a href="https://github.com/HKUDS/RAG-Anything">HKUDS/RAG-Anything</a></div><div class="repo-blurb">全能 RAG 框架，支持文档、图像、表格多模态检索增强生成，开箱即用。</div><div class="repo-meta"><span class="stars">★ +590</span><span>/ 18.3k</span><span><span class="lang-dot"></span>Python</span></div></div>
+          <div class="repo-card"><div class="repo-name"><a href="https://github.com/ruvnet/RuView">ruvnet/RuView</a></div><div class="repo-blurb">基于 WiFi 信号的无摄像头人体姿态实时估计，保护隐私同时实现全屋监控。</div><div class="repo-meta"><span class="stars">★ +429</span><span>/ 49.9k</span><span><span class="lang-dot"></span>Rust</span></div></div>
+          <div class="repo-card"><div class="repo-name"><a href="https://github.com/Anil-matcha/Open-Generative-AI">Anil-matcha/Open-Generative-AI</a></div><div class="repo-blurb">开源 AI 图像视频生成平台，集成 200+ 模型，无审查，支持本地私有化部署。</div><div class="repo-meta"><span class="stars">★ +316</span><span>/ 7.1k</span><span><span class="lang-dot"></span>JavaScript</span></div></div>
+        </div>
+        <!--<![endif]-->
+
+      </div>
+      <!--[if mso]></td></tr></table><![endif]-->
+    </div>
+  </section>
+
+  <!-- 03 SKILLS -->
+  <section>
+    <div class="panel" style="border:1px solid #2a382a;background:#0d120d;">
+      <!--[if mso]>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#111f18" style="background:#111f18;border-bottom:1px solid #2a382a;">
+      <tr valign="middle">
+        <td width="44" style="padding:10px 0 10px 14px;font-family:'Noto Serif SC',Georgia,serif;font-style:italic;font-weight:500;color:#7fffd4;font-size:22px;line-height:1;white-space:nowrap;">03</td>
+        <td style="padding:10px 0;font-family:'Noto Sans SC',sans-serif;font-weight:600;font-size:15px;color:#d4e0d4;white-space:nowrap;">Skills 飙升榜 · TOP 10</td>
+      </tr></table>
+      <![endif]-->
+      <!--[if !mso]><!-->
+      <div class="panel-hd"><span class="num">03</span><span class="title">Skills 飙升榜 · TOP 10</span></div>
+      <!--<![endif]-->
+      <!--[if mso]><table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="padding:12px 14px;"><![endif]-->
+      <div class="panel-body">
+
+        <!--[if mso]>
+        <table width="100%" cellpadding="0" cellspacing="0" border="0">
+          <tr><td width="22" style="color:#6a806a;font-size:12px;padding:7px 8px 7px 0;border-bottom:1px dashed #2a382a;white-space:nowrap;vertical-align:top;">01</td><td width="115" style="color:#7fffd4;font-weight:600;font-size:12px;padding:7px 8px 7px 0;border-bottom:1px dashed #2a382a;white-space:nowrap;vertical-align:top;">claude-code</td><td style="color:#a0b8a0;font-family:'Noto Sans SC',sans-serif;font-size:12px;line-height:1.5;padding:7px 8px 7px 0;border-bottom:1px dashed #2a382a;vertical-align:top;">8个月超越 GitHub Copilot 成开发者首选，AI 编程主力工具，市占率持续扩大。</td><td align="right" style="font-size:12px;color:#d4e0d4;white-space:nowrap;padding:7px 0;border-bottom:1px dashed #2a382a;vertical-align:top;">98.4k<span style="color:#6a806a;font-size:10px;margin-left:4px;">·anthropic</span></td></tr>
+          <tr><td width="22" style="color:#6a806a;font-size:12px;padding:7px 8px 7px 0;border-bottom:1px dashed #2a382a;white-space:nowrap;vertical-align:top;">02</td><td width="115" style="color:#7fffd4;font-weight:600;font-size:12px;padding:7px 8px 7px 0;border-bottom:1px dashed #2a382a;white-space:nowrap;vertical-align:top;">mcp-server-builder</td><td style="color:#a0b8a0;font-family:'Noto Sans SC',sans-serif;font-size:12px;line-height:1.5;padding:7px 8px 7px 0;border-bottom:1px dashed #2a382a;vertical-align:top;">构建 MCP 服务器，让 Claude 直接访问内部工具、数据库和私有 API。</td><td align="right" style="font-size:12px;color:#d4e0d4;white-space:nowrap;padding:7px 0;border-bottom:1px dashed #2a382a;vertical-align:top;">34.2k<span style="color:#6a806a;font-size:10px;margin-left:4px;">·anthropic</span></td></tr>
+          <tr><td width="22" style="color:#6a806a;font-size:12px;padding:7px 8px 7px 0;border-bottom:1px dashed #2a382a;white-space:nowrap;vertical-align:top;">03</td><td width="115" style="color:#7fffd4;font-weight:600;font-size:12px;padding:7px 8px 7px 0;border-bottom:1px dashed #2a382a;white-space:nowrap;vertical-align:top;">prompt-engineering</td><td style="color:#a0b8a0;font-family:'Noto Sans SC',sans-serif;font-size:12px;line-height:1.5;padding:7px 8px 7px 0;border-bottom:1px dashed #2a382a;vertical-align:top;">结构化指令设计，让 AI 输出更精准可控，是业务问题与 AI 能力之间的核心桥梁。</td><td align="right" style="font-size:12px;color:#d4e0d4;white-space:nowrap;padding:7px 0;border-bottom:1px dashed #2a382a;vertical-align:top;">27.6k<span style="color:#6a806a;font-size:10px;margin-left:4px;">·official</span></td></tr>
+          <tr><td width="22" style="color:#6a806a;font-size:12px;padding:7px 8px 7px 0;border-bottom:1px dashed #2a382a;white-space:nowrap;vertical-align:top;">04</td><td width="115" style="color:#7fffd4;font-weight:600;font-size:12px;padding:7px 8px 7px 0;border-bottom:1px dashed #2a382a;white-space:nowrap;vertical-align:top;">ai-agent-orchestration</td><td style="color:#a0b8a0;font-family:'Noto Sans SC',sans-serif;font-size:12px;line-height:1.5;padding:7px 8px 7px 0;border-bottom:1px dashed #2a382a;vertical-align:top;">多 Agent 编排，协调多个 AI 并行完成复杂长链任务，55% 工程师已在使用。</td><td align="right" style="font-size:12px;color:#d4e0d4;white-space:nowrap;padding:7px 0;border-bottom:1px dashed #2a382a;vertical-align:top;">19.8k<span style="color:#6a806a;font-size:10px;margin-left:4px;">·langgraph</span></td></tr>
+          <tr><td width="22" style="color:#6a806a;font-size:12px;padding:7px 8px 7px 0;border-bottom:1px dashed #2a382a;white-space:nowrap;vertical-align:top;">05</td><td width="115" style="color:#7fffd4;font-weight:600;font-size:12px;padding:7px 8px 7px 0;border-bottom:1px dashed #2a382a;white-space:nowrap;vertical-align:top;">rag-pipeline</td><td style="color:#a0b8a0;font-family:'Noto Sans SC',sans-serif;font-size:12px;line-height:1.5;padding:7px 8px 7px 0;border-bottom:1px dashed #2a382a;vertical-align:top;">检索增强生成，将向量数据库与 LLM 集成，让模型访问企业私有知识库。</td><td align="right" style="font-size:12px;color:#d4e0d4;white-space:nowrap;padding:7px 0;border-bottom:1px dashed #2a382a;vertical-align:top;">16.3k<span style="color:#6a806a;font-size:10px;margin-left:4px;">·langchain</span></td></tr>
+          <tr><td width="22" style="color:#6a806a;font-size:12px;padding:7px 8px 7px 0;border-bottom:1px dashed #2a382a;white-space:nowrap;vertical-align:top;">06</td><td width="115" style="color:#7fffd4;font-weight:600;font-size:12px;padding:7px 8px 7px 0;border-bottom:1px dashed #2a382a;white-space:nowrap;vertical-align:top;">llm-ops</td><td style="color:#a0b8a0;font-family:'Noto Sans SC',sans-serif;font-size:12px;line-height:1.5;padding:7px 8px 7px 0;border-bottom:1px dashed #2a382a;vertical-align:top;">LLM 生产环境运维管理，包含监控、评估、成本优化和模型版本管理。</td><td align="right" style="font-size:12px;color:#d4e0d4;white-space:nowrap;padding:7px 0;border-bottom:1px dashed #2a382a;vertical-align:top;">12.1k<span style="color:#6a806a;font-size:10px;margin-left:4px;">·mlflow</span></td></tr>
+          <tr><td width="22" style="color:#6a806a;font-size:12px;padding:7px 8px 7px 0;border-bottom:1px dashed #2a382a;white-space:nowrap;vertical-align:top;">07</td><td width="115" style="color:#7fffd4;font-weight:600;font-size:12px;padding:7px 8px 7px 0;border-bottom:1px dashed #2a382a;white-space:nowrap;vertical-align:top;">python-llm</td><td style="color:#a0b8a0;font-family:'Noto Sans SC',sans-serif;font-size:12px;line-height:1.5;padding:7px 8px 7px 0;border-bottom:1px dashed #2a382a;vertical-align:top;">Python 驱动 LLM 开发，将业务问题翻译成提示词并接入应用，市场需求最大。</td><td align="right" style="font-size:12px;color:#d4e0d4;white-space:nowrap;padding:7px 0;border-bottom:1px dashed #2a382a;vertical-align:top;">9.7k<span style="color:#6a806a;font-size:10px;margin-left:4px;">·openai</span></td></tr>
+          <tr><td width="22" style="color:#6a806a;font-size:12px;padding:7px 8px 7px 0;border-bottom:1px dashed #2a382a;white-space:nowrap;vertical-align:top;">08</td><td width="115" style="color:#7fffd4;font-weight:600;font-size:12px;padding:7px 8px 7px 0;border-bottom:1px dashed #2a382a;white-space:nowrap;vertical-align:top;">code-review-ai</td><td style="color:#a0b8a0;font-family:'Noto Sans SC',sans-serif;font-size:12px;line-height:1.5;padding:7px 8px 7px 0;border-bottom:1px dashed #2a382a;vertical-align:top;">AI 辅助代码审查，自动化 PR review，关注安全、性能、可读性三维度。</td><td align="right" style="font-size:12px;color:#d4e0d4;white-space:nowrap;padding:7px 0;border-bottom:1px dashed #2a382a;vertical-align:top;">7.4k<span style="color:#6a806a;font-size:10px;margin-left:4px;">·github-ai</span></td></tr>
+          <tr><td width="22" style="color:#6a806a;font-size:12px;padding:7px 8px 7px 0;border-bottom:1px dashed #2a382a;white-space:nowrap;vertical-align:top;">09</td><td width="115" style="color:#7fffd4;font-weight:600;font-size:12px;padding:7px 8px 7px 0;border-bottom:1px dashed #2a382a;white-space:nowrap;vertical-align:top;">multimodal-dev</td><td style="color:#a0b8a0;font-family:'Noto Sans SC',sans-serif;font-size:12px;line-height:1.5;padding:7px 8px 7px 0;border-bottom:1px dashed #2a382a;vertical-align:top;">多模态应用开发，图文音视频统一处理，是 Gemini 3 和 Claude 的核心能力方向。</td><td align="right" style="font-size:12px;color:#d4e0d4;white-space:nowrap;padding:7px 0;border-bottom:1px dashed #2a382a;vertical-align:top;">5.9k<span style="color:#6a806a;font-size:10px;margin-left:4px;">·google-deepmind</span></td></tr>
+          <tr><td width="22" style="color:#6a806a;font-size:12px;padding:7px 8px 7px 0;white-space:nowrap;vertical-align:top;">10</td><td width="115" style="color:#7fffd4;font-weight:600;font-size:12px;padding:7px 8px 7px 0;white-space:nowrap;vertical-align:top;">ai-security-testing</td><td style="color:#a0b8a0;font-family:'Noto Sans SC',sans-serif;font-size:12px;line-height:1.5;padding:7px 8px 7px 0;vertical-align:top;">AI 系统安全测试，对抗提示注入与模型越狱，随 Agentic AI 普及需求急升。</td><td align="right" style="font-size:12px;color:#d4e0d4;white-space:nowrap;padding:7px 0;vertical-align:top;">4.2k<span style="color:#6a806a;font-size:10px;margin-left:4px;">·redteam-ai</span></td></tr>
+        </table>
+        <![endif]-->
+        <!--[if !mso]><!-->
+        <div class="skill-row"><span class="skill-rank">01</span><span class="skill-name">claude-code</span><span class="skill-blurb">8个月超越 GitHub Copilot 成开发者首选，AI 编程主力工具，市占率持续扩大。</span><span class="skill-uses">98.4k<span class="skill-author">·anthropic</span></span></div>
+        <div class="skill-row"><span class="skill-rank">02</span><span class="skill-name">mcp-server-builder</span><span class="skill-blurb">构建 MCP 服务器，让 Claude 直接访问内部工具、数据库和私有 API。</span><span class="skill-uses">34.2k<span class="skill-author">·anthropic</span></span></div>
+        <div class="skill-row"><span class="skill-rank">03</span><span class="skill-name">prompt-engineering</span><span class="skill-blurb">结构化指令设计，让 AI 输出更精准可控，是业务问题与 AI 能力之间的核心桥梁。</span><span class="skill-uses">27.6k<span class="skill-author">·official</span></span></div>
+        <div class="skill-row"><span class="skill-rank">04</span><span class="skill-name">ai-agent-orchestration</span><span class="skill-blurb">多 Agent 编排，协调多个 AI 并行完成复杂长链任务，55% 工程师已在使用。</span><span class="skill-uses">19.8k<span class="skill-author">·langgraph</span></span></div>
+        <div class="skill-row"><span class="skill-rank">05</span><span class="skill-name">rag-pipeline</span><span class="skill-blurb">检索增强生成，将向量数据库与 LLM 集成，让模型访问企业私有知识库。</span><span class="skill-uses">16.3k<span class="skill-author">·langchain</span></span></div>
+        <div class="skill-row"><span class="skill-rank">06</span><span class="skill-name">llm-ops</span><span class="skill-blurb">LLM 生产环境运维管理，包含监控、评估、成本优化和模型版本管理。</span><span class="skill-uses">12.1k<span class="skill-author">·mlflow</span></span></div>
+        <div class="skill-row"><span class="skill-rank">07</span><span class="skill-name">python-llm</span><span class="skill-blurb">Python 驱动 LLM 开发，将业务问题翻译成提示词并接入应用，市场需求最大。</span><span class="skill-uses">9.7k<span class="skill-author">·openai</span></span></div>
+        <div class="skill-row"><span class="skill-rank">08</span><span class="skill-name">code-review-ai</span><span class="skill-blurb">AI 辅助代码审查，自动化 PR review，关注安全、性能、可读性三维度。</span><span class="skill-uses">7.4k<span class="skill-author">·github-ai</span></span></div>
+        <div class="skill-row"><span class="skill-rank">09</span><span class="skill-name">multimodal-dev</span><span class="skill-blurb">多模态应用开发，图文音视频统一处理，是 Gemini 3 和 Claude 的核心能力方向。</span><span class="skill-uses">5.9k<span class="skill-author">·google-deepmind</span></span></div>
+        <div class="skill-row"><span class="skill-rank">10</span><span class="skill-name">ai-security-testing</span><span class="skill-blurb">AI 系统安全测试，对抗提示注入与模型越狱，随 Agentic AI 普及需求急升。</span><span class="skill-uses">4.2k<span class="skill-author">·redteam-ai</span></span></div>
+        <!--<![endif]-->
+
+      </div>
+      <!--[if mso]></td></tr></table><![endif]-->
+    </div>
+  </section>
+
+  <!-- 04 CLAUDE CODE TIPS -->
+  <section>
+    <div class="panel" style="border:1px solid #2a382a;background:#0d120d;">
+      <!--[if mso]>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#111f18" style="background:#111f18;border-bottom:1px solid #2a382a;">
+      <tr valign="middle">
+        <td width="44" style="padding:10px 0 10px 14px;font-family:'Noto Serif SC',Georgia,serif;font-style:italic;font-weight:500;color:#7fffd4;font-size:22px;line-height:1;white-space:nowrap;">04</td>
+        <td style="padding:10px 0;font-family:'Noto Sans SC',sans-serif;font-weight:600;font-size:15px;color:#d4e0d4;white-space:nowrap;">Claude Code 技巧</td>
+      </tr></table>
+      <![endif]-->
+      <!--[if !mso]><!-->
+      <div class="panel-hd"><span class="num">04</span><span class="title">Claude Code 技巧</span></div>
+      <!--<![endif]-->
+      <!--[if mso]><table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="padding:12px 14px;"><![endif]-->
+      <div class="panel-body">
+        <div class="tip">
+          <div class="tip-head"><span class="sigil">$</span>频繁用 <span class="tip-code">/clear</span> 保持上下文清洁</div>
+          <div class="tip-body">Claude 上下文达 90% 时输出质量显著下降，关键指令会被淹没。每次开始新任务前用 /clear 清空对话，是提升输出质量最有效的习惯。</div>
+        </div>
+        <div class="tip">
+          <div class="tip-head"><span class="sigil">$</span>用 Skills 处理重复性任务</div>
+          <div class="tip-body">把每周重复的任务（代码审查模板、报告格式）写成 Skill 文件，按需加载而非写入 CLAUDE.md，有效减少每次会话的上下文占用。</div>
+        </div>
+        <div class="tip">
+          <div class="tip-head"><span class="sigil">$</span><span class="tip-code">Esc</span> 停止不丢上下文，双击可回溯检查点</div>
+          <div class="tip-body">按 Esc 立即停止 Claude 正在执行的动作而不丢失上下文，可立即重新引导。双击 Esc 或输入 /rewind 进入历史检查点菜单，支持回滚代码和对话。</div>
+        </div>
+        <div class="tip">
+          <div class="tip-head"><span class="sigil">$</span>给 Claude 验证方法让它自迭代</div>
+          <div class="tip-body">最重要技巧：给 Claude 一个可验证输出的方法（测试套件、linter、构建命令），它会持续迭代直到通过，成功率从 33% 提升至 80%+。</div>
+        </div>
+        <div class="tip">
+          <div class="tip-head"><span class="sigil">$</span><span class="tip-code">/install-github-app</span> 自动审查 PR</div>
+          <div class="tip-body">安装后 Claude Code 会自动审查所有新 PR，无需手动触发。高产工程师与普通用户的差距，往往在于能否让 AI 自动化处理重复审查工作。</div>
+        </div>
+      </div>
+      <!--[if mso]></td></tr></table><![endif]-->
+    </div>
+  </section>
+
+  <!-- 05 OPENROUTER -->
+  <section>
+    <div class="panel" style="border:1px solid #2a382a;background:#0d120d;">
+      <!--[if mso]>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#111f18" style="background:#111f18;border-bottom:1px solid #2a382a;">
+      <tr valign="middle">
+        <td width="44" style="padding:10px 0 10px 14px;font-family:'Noto Serif SC',Georgia,serif;font-style:italic;font-weight:500;color:#7fffd4;font-size:22px;line-height:1;white-space:nowrap;">05</td>
+        <td style="padding:10px 0;font-family:'Noto Sans SC',sans-serif;font-weight:600;font-size:15px;color:#d4e0d4;white-space:nowrap;">OpenRouter 调用榜 · TOP 10</td>
+      </tr></table>
+      <![endif]-->
+      <!--[if !mso]><!-->
+      <div class="panel-hd"><span class="num">05</span><span class="title">OpenRouter 调用榜 · TOP 10</span></div>
+      <!--<![endif]-->
+      <!--[if mso]><table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="padding:12px 14px;"><![endif]-->
+      <div class="panel-body">
+
+        <!--[if mso]>
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-bottom:1px dashed #2a382a;margin-bottom:6px;"><tr valign="middle"><td width="30" style="font-family:'Noto Serif SC',serif;font-style:italic;font-weight:500;color:#7fffd4;font-size:16px;text-align:right;padding:6px 12px 6px 0;white-space:nowrap;">1</td><td style="padding:6px 0;"><table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:4px;"><tr valign="baseline"><td style="font-family:'Noto Sans SC',sans-serif;font-weight:600;font-size:13px;color:#d4e0d4;">Claude Sonnet 4.6 <span style="color:#a0b8a0;font-size:10px;font-weight:400;">Anthropic</span></td><td align="right" style="white-space:nowrap;font-size:12px;font-weight:600;color:#d4e0d4;">1.38T <span style="font-size:10px;color:#7fffd4;">↑ +3%</span></td></tr></table><table width="100%" height="4" cellpadding="0" cellspacing="0" border="0" bgcolor="#122018"><tr><td bgcolor="#7fffd4" height="4" style="height:4px;line-height:4px;font-size:1px;mso-line-height-rule:exactly;">&nbsp;</td></tr></table></td></tr></table>
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-bottom:1px dashed #2a382a;margin-bottom:6px;"><tr valign="middle"><td width="30" style="font-family:'Noto Serif SC',serif;font-style:italic;font-weight:500;color:#7fffd4;font-size:16px;text-align:right;padding:6px 12px 6px 0;white-space:nowrap;">2</td><td style="padding:6px 0;"><table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:4px;"><tr valign="baseline"><td style="font-family:'Noto Sans SC',sans-serif;font-weight:600;font-size:13px;color:#d4e0d4;">DeepSeek V3.2 <span style="color:#a0b8a0;font-size:10px;font-weight:400;">DeepSeek</span></td><td align="right" style="white-space:nowrap;font-size:12px;font-weight:600;color:#d4e0d4;">1.32T <span style="font-size:10px;color:#7fffd4;">↑ +3%</span></td></tr></table><table width="100%" height="4" cellpadding="0" cellspacing="0" border="0" bgcolor="#122018"><tr><td width="96%" bgcolor="#7fffd4" height="4" style="height:4px;line-height:4px;font-size:1px;mso-line-height-rule:exactly;">&nbsp;</td><td width="4%">&nbsp;</td></tr></table></td></tr></table>
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-bottom:1px dashed #2a382a;margin-bottom:6px;"><tr valign="middle"><td width="30" style="font-family:'Noto Serif SC',serif;font-style:italic;font-weight:500;color:#7fffd4;font-size:16px;text-align:right;padding:6px 12px 6px 0;white-space:nowrap;">3</td><td style="padding:6px 0;"><table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:4px;"><tr valign="baseline"><td style="font-family:'Noto Sans SC',sans-serif;font-weight:600;font-size:13px;color:#d4e0d4;">Gemini 3 Flash Preview <span style="color:#a0b8a0;font-size:10px;font-weight:400;">Google</span></td><td align="right" style="white-space:nowrap;font-size:12px;font-weight:600;color:#d4e0d4;">1.11T <span style="font-size:10px;color:#a0b8a0;">+0%</span></td></tr></table><table width="100%" height="4" cellpadding="0" cellspacing="0" border="0" bgcolor="#122018"><tr><td width="80%" bgcolor="#7fffd4" height="4" style="height:4px;line-height:4px;font-size:1px;mso-line-height-rule:exactly;">&nbsp;</td><td width="20%">&nbsp;</td></tr></table></td></tr></table>
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-bottom:1px dashed #2a382a;margin-bottom:6px;"><tr valign="middle"><td width="30" style="font-family:'Noto Serif SC',serif;font-style:italic;font-weight:500;color:#6a806a;font-size:16px;text-align:right;padding:6px 12px 6px 0;white-space:nowrap;">4</td><td style="padding:6px 0;"><table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:4px;"><tr valign="baseline"><td style="font-family:'Noto Sans SC',sans-serif;font-weight:600;font-size:13px;color:#d4e0d4;">Claude Opus 4.7 <span style="color:#a0b8a0;font-size:10px;font-weight:400;">Anthropic</span></td><td align="right" style="white-space:nowrap;font-size:12px;font-weight:600;color:#d4e0d4;">951B <span style="font-size:10px;color:#7fffd4;">↑ +4221%</span></td></tr></table><table width="100%" height="4" cellpadding="0" cellspacing="0" border="0" bgcolor="#122018"><tr><td width="69%" bgcolor="#3a8060" height="4" style="height:4px;line-height:4px;font-size:1px;mso-line-height-rule:exactly;">&nbsp;</td><td width="31%">&nbsp;</td></tr></table></td></tr></table>
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-bottom:1px dashed #2a382a;margin-bottom:6px;"><tr valign="middle"><td width="30" style="font-family:'Noto Serif SC',serif;font-style:italic;font-weight:500;color:#6a806a;font-size:16px;text-align:right;padding:6px 12px 6px 0;white-space:nowrap;">5</td><td style="padding:6px 0;"><table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:4px;"><tr valign="baseline"><td style="font-family:'Noto Sans SC',sans-serif;font-weight:600;font-size:13px;color:#d4e0d4;">MiMo V2 Pro <span style="color:#a0b8a0;font-size:10px;font-weight:400;">Xiaomi</span></td><td align="right" style="white-space:nowrap;font-size:12px;font-weight:600;color:#d4e0d4;">902B <span style="font-size:10px;color:#7fffd4;">↑ +9%</span></td></tr></table><table width="100%" height="4" cellpadding="0" cellspacing="0" border="0" bgcolor="#122018"><tr><td width="65%" bgcolor="#3a8060" height="4" style="height:4px;line-height:4px;font-size:1px;mso-line-height-rule:exactly;">&nbsp;</td><td width="35%">&nbsp;</td></tr></table></td></tr></table>
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-bottom:1px dashed #2a382a;margin-bottom:6px;"><tr valign="middle"><td width="30" style="font-family:'Noto Serif SC',serif;font-style:italic;font-weight:500;color:#6a806a;font-size:16px;text-align:right;padding:6px 12px 6px 0;white-space:nowrap;">6</td><td style="padding:6px 0;"><table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:4px;"><tr valign="baseline"><td style="font-family:'Noto Sans SC',sans-serif;font-weight:600;font-size:13px;color:#d4e0d4;">MiniMax M2.5 <span style="color:#a0b8a0;font-size:10px;font-weight:400;">MiniMax</span></td><td align="right" style="white-space:nowrap;font-size:12px;font-weight:600;color:#d4e0d4;">856B <span style="font-size:10px;color:#7fffd4;">↑ +22%</span></td></tr></table><table width="100%" height="4" cellpadding="0" cellspacing="0" border="0" bgcolor="#122018"><tr><td width="62%" bgcolor="#3a8060" height="4" style="height:4px;line-height:4px;font-size:1px;mso-line-height-rule:exactly;">&nbsp;</td><td width="38%">&nbsp;</td></tr></table></td></tr></table>
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-bottom:1px dashed #2a382a;margin-bottom:6px;"><tr valign="middle"><td width="30" style="font-family:'Noto Serif SC',serif;font-style:italic;font-weight:500;color:#6a806a;font-size:16px;text-align:right;padding:6px 12px 6px 0;white-space:nowrap;">7</td><td style="padding:6px 0;"><table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:4px;"><tr valign="baseline"><td style="font-family:'Noto Sans SC',sans-serif;font-weight:600;font-size:13px;color:#d4e0d4;">MiniMax M2.7 <span style="color:#a0b8a0;font-size:10px;font-weight:400;">MiniMax</span></td><td align="right" style="white-space:nowrap;font-size:12px;font-weight:600;color:#d4e0d4;">813B <span style="font-size:10px;color:#7fffd4;">↑ +24%</span></td></tr></table><table width="100%" height="4" cellpadding="0" cellspacing="0" border="0" bgcolor="#122018"><tr><td width="59%" bgcolor="#3a8060" height="4" style="height:4px;line-height:4px;font-size:1px;mso-line-height-rule:exactly;">&nbsp;</td><td width="41%">&nbsp;</td></tr></table></td></tr></table>
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-bottom:1px dashed #2a382a;margin-bottom:6px;"><tr valign="middle"><td width="30" style="font-family:'Noto Serif SC',serif;font-style:italic;font-weight:500;color:#6a806a;font-size:16px;text-align:right;padding:6px 12px 6px 0;white-space:nowrap;">8</td><td style="padding:6px 0;"><table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:4px;"><tr valign="baseline"><td style="font-family:'Noto Sans SC',sans-serif;font-weight:600;font-size:13px;color:#d4e0d4;">Kimi K2.6 <span style="color:#a0b8a0;font-size:10px;font-weight:400;">Moonshot AI</span></td><td align="right" style="white-space:nowrap;font-size:12px;font-weight:600;color:#d4e0d4;">792B <span style="font-size:10px;color:#7fffd4;">new</span></td></tr></table><table width="100%" height="4" cellpadding="0" cellspacing="0" border="0" bgcolor="#122018"><tr><td width="57%" bgcolor="#3a8060" height="4" style="height:4px;line-height:4px;font-size:1px;mso-line-height-rule:exactly;">&nbsp;</td><td width="43%">&nbsp;</td></tr></table></td></tr></table>
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-bottom:1px dashed #2a382a;margin-bottom:6px;"><tr valign="middle"><td width="30" style="font-family:'Noto Serif SC',serif;font-style:italic;font-weight:500;color:#6a806a;font-size:16px;text-align:right;padding:6px 12px 6px 0;white-space:nowrap;">9</td><td style="padding:6px 0;"><table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:4px;"><tr valign="baseline"><td style="font-family:'Noto Sans SC',sans-serif;font-weight:600;font-size:13px;color:#d4e0d4;">Claude Opus 4.6 <span style="color:#a0b8a0;font-size:10px;font-weight:400;">Anthropic</span></td><td align="right" style="white-space:nowrap;font-size:12px;font-weight:600;color:#d4e0d4;">756B <span style="font-size:10px;color:#7fffd4;">↑ +46%</span></td></tr></table><table width="100%" height="4" cellpadding="0" cellspacing="0" border="0" bgcolor="#122018"><tr><td width="55%" bgcolor="#3a8060" height="4" style="height:4px;line-height:4px;font-size:1px;mso-line-height-rule:exactly;">&nbsp;</td><td width="45%">&nbsp;</td></tr></table></td></tr></table>
+        <table width="100%" cellpadding="0" cellspacing="0" border="0"><tr valign="middle"><td width="30" style="font-family:'Noto Serif SC',serif;font-style:italic;font-weight:500;color:#6a806a;font-size:16px;text-align:right;padding:6px 12px 6px 0;white-space:nowrap;">10</td><td style="padding:6px 0;"><table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:4px;"><tr valign="baseline"><td style="font-family:'Noto Sans SC',sans-serif;font-weight:600;font-size:13px;color:#d4e0d4;">Grok 4.1 Fast <span style="color:#a0b8a0;font-size:10px;font-weight:400;">X.AI</span></td><td align="right" style="white-space:nowrap;font-size:12px;font-weight:600;color:#d4e0d4;">700B <span style="font-size:10px;color:#7fffd4;">↑ +33%</span></td></tr></table><table width="100%" height="4" cellpadding="0" cellspacing="0" border="0" bgcolor="#122018"><tr><td width="51%" bgcolor="#3a8060" height="4" style="height:4px;line-height:4px;font-size:1px;mso-line-height-rule:exactly;">&nbsp;</td><td width="49%">&nbsp;</td></tr></table></td></tr></table>
+        <![endif]-->
+        <!--[if !mso]><!-->
+        <div class="tok-row top"><div class="tok-rank">1</div><div class="tok-body"><div class="tok-head"><div><span class="tok-model">Claude Sonnet 4.6</span><span class="tok-vendor">Anthropic</span></div><div><span class="tok-tokens">1.38T</span><span class="tok-change up">+3%</span></div></div><div class="tok-bar"><div style="width:100%"></div></div></div></div>
+        <div class="tok-row top"><div class="tok-rank">2</div><div class="tok-body"><div class="tok-head"><div><span class="tok-model">DeepSeek V3.2</span><span class="tok-vendor">DeepSeek</span></div><div><span class="tok-tokens">1.32T</span><span class="tok-change up">+3%</span></div></div><div class="tok-bar"><div style="width:96%"></div></div></div></div>
+        <div class="tok-row top"><div class="tok-rank">3</div><div class="tok-body"><div class="tok-head"><div><span class="tok-model">Gemini 3 Flash Preview</span><span class="tok-vendor">Google</span></div><div><span class="tok-tokens">1.11T</span><span class="tok-change">+0%</span></div></div><div class="tok-bar"><div style="width:80%"></div></div></div></div>
+        <div class="tok-row"><div class="tok-rank">4</div><div class="tok-body"><div class="tok-head"><div><span class="tok-model">Claude Opus 4.7</span><span class="tok-vendor">Anthropic</span></div><div><span class="tok-tokens">951B</span><span class="tok-change up">+4221%</span></div></div><div class="tok-bar"><div style="width:69%"></div></div></div></div>
+        <div class="tok-row"><div class="tok-rank">5</div><div class="tok-body"><div class="tok-head"><div><span class="tok-model">MiMo V2 Pro</span><span class="tok-vendor">Xiaomi</span></div><div><span class="tok-tokens">902B</span><span class="tok-change up">+9%</span></div></div><div class="tok-bar"><div style="width:65%"></div></div></div></div>
+        <div class="tok-row"><div class="tok-rank">6</div><div class="tok-body"><div class="tok-head"><div><span class="tok-model">MiniMax M2.5</span><span class="tok-vendor">MiniMax</span></div><div><span class="tok-tokens">856B</span><span class="tok-change up">+22%</span></div></div><div class="tok-bar"><div style="width:62%"></div></div></div></div>
+        <div class="tok-row"><div class="tok-rank">7</div><div class="tok-body"><div class="tok-head"><div><span class="tok-model">MiniMax M2.7</span><span class="tok-vendor">MiniMax</span></div><div><span class="tok-tokens">813B</span><span class="tok-change up">+24%</span></div></div><div class="tok-bar"><div style="width:59%"></div></div></div></div>
+        <div class="tok-row"><div class="tok-rank">8</div><div class="tok-body"><div class="tok-head"><div><span class="tok-model">Kimi K2.6</span><span class="tok-vendor">Moonshot AI</span></div><div><span class="tok-tokens">792B</span><span class="tok-change up">new</span></div></div><div class="tok-bar"><div style="width:57%"></div></div></div></div>
+        <div class="tok-row"><div class="tok-rank">9</div><div class="tok-body"><div class="tok-head"><div><span class="tok-model">Claude Opus 4.6</span><span class="tok-vendor">Anthropic</span></div><div><span class="tok-tokens">756B</span><span class="tok-change up">+46%</span></div></div><div class="tok-bar"><div style="width:55%"></div></div></div></div>
+        <div class="tok-row"><div class="tok-rank">10</div><div class="tok-body"><div class="tok-head"><div><span class="tok-model">Grok 4.1 Fast</span><span class="tok-vendor">X.AI</span></div><div><span class="tok-tokens">700B</span><span class="tok-change up">+33%</span></div></div><div class="tok-bar"><div style="width:51%"></div></div></div></div>
+        <!--<![endif]-->
+
+      </div>
+      <!--[if mso]></td></tr></table><![endif]-->
+    </div>
+  </section>
+
+  <!-- 06 SECURITY -->
+  <section>
+    <div class="panel" style="border:1px solid #2a382a;background:#0d120d;">
+      <!--[if mso]>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#111f18" style="background:#111f18;border-bottom:1px solid #2a382a;">
+      <tr valign="middle">
+        <td width="44" style="padding:10px 0 10px 14px;font-family:'Noto Serif SC',Georgia,serif;font-style:italic;font-weight:500;color:#7fffd4;font-size:22px;line-height:1;white-space:nowrap;">06</td>
+        <td style="padding:10px 0;font-family:'Noto Sans SC',sans-serif;font-weight:600;font-size:15px;color:#d4e0d4;white-space:nowrap;">AI 安全事件</td>
+      </tr></table>
+      <![endif]-->
+      <!--[if !mso]><!-->
+      <div class="panel-hd"><span class="num">06</span><span class="title">AI 安全事件</span></div>
+      <!--<![endif]-->
+      <!--[if mso]><table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="padding:12px 14px;"><![endif]-->
+      <div class="panel-body">
+
+        <div class="sec-item high" style="padding:11px 12px;margin-bottom:9px;border:1px solid #cc3a3a;background:#1c0808;">
+          <!--[if mso]>
+          <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:4px;width:100%;"><tr valign="top">
+            <td style="white-space:nowrap;padding-right:8px;"><span style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.12em;font-weight:700;padding:3px 7px;background:#ff5c5c;color:#0a0e0a;display:inline-block;">⚠ HIGH</span></td>
+            <td><a href="https://vercel.com/kb/bulletin/vercel-april-2026-security-incident" style="font-family:'Noto Sans SC',sans-serif;font-weight:600;font-size:13.5px;line-height:1.3;color:#d4e0d4;text-decoration:none;">Vercel 遭供应链攻击，Context.ai 成突破口</a></td>
+          </tr></table>
+          <![endif]-->
+          <!--[if !mso]><!-->
+          <div class="sec-head"><span class="sec-badge">⚠ HIGH</span><div class="sec-title"><a href="https://vercel.com/kb/bulletin/vercel-april-2026-security-incident">Vercel 遭供应链攻击，Context.ai 成突破口</a></div></div>
+          <!--<![endif]-->
+          <div class="sec-blurb">攻击者于4月19日通过第三方 AI 工具 Context.ai 入侵 Vercel 员工 Google Workspace 账户，进而枚举并解密环境变量，用户数据疑遭出售至 BreachForums。建议立即审查第三方 AI 工具访问权限并轮换环境变量。</div>
+        </div>
+
+        <div class="sec-item high" style="padding:11px 12px;margin-bottom:9px;border:1px solid #cc3a3a;background:#1c0808;">
+          <!--[if mso]>
+          <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:4px;width:100%;"><tr valign="top">
+            <td style="white-space:nowrap;padding-right:8px;"><span style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.12em;font-weight:700;padding:3px 7px;background:#ff5c5c;color:#0a0e0a;display:inline-block;">⚠ HIGH</span></td>
+            <td><a href="https://foresiet.com/blog/ai-security-incidents-attack-paths-april-2026/" style="font-family:'Noto Sans SC',sans-serif;font-weight:600;font-size:13.5px;line-height:1.3;color:#d4e0d4;text-decoration:none;">AI 越狱攻击协助入侵墨西哥10家政府机构</a></td>
+          </tr></table>
+          <![endif]-->
+          <!--[if !mso]><!-->
+          <div class="sec-head"><span class="sec-badge">⚠ HIGH</span><div class="sec-title"><a href="https://foresiet.com/blog/ai-security-incidents-attack-paths-april-2026/">AI 越狱攻击协助入侵墨西哥10家政府机构</a></div></div>
+          <!--<![endif]-->
+          <div class="sec-blurb">攻击者使用越狱提示词诱导 Claude 提供漏洞利用辅助，成功攻破税务局、选举委员会等10个机构，利用至少20个漏洞并借助 AI 加速侦察和数据盗取。建议企业部署 AI 调用审计日志和行为监控。</div>
+        </div>
+
+        <div class="sec-item medium" style="padding:11px 12px;margin-bottom:9px;border:1px solid #c47820;background:#1a1508;">
+          <!--[if mso]>
+          <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:4px;width:100%;"><tr valign="top">
+            <td style="white-space:nowrap;padding-right:8px;"><span style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.12em;font-weight:700;padding:3px 7px;background:#ffb02e;color:#0a0e0a;display:inline-block;">⚠ MED</span></td>
+            <td><a href="https://foresiet.com/blog/ai-security-incidents-attack-paths-april-2026/" style="font-family:'Noto Sans SC',sans-serif;font-weight:600;font-size:13.5px;line-height:1.3;color:#d4e0d4;text-decoration:none;">泄露模型权重遭地下论坛系统性越狱测试</a></td>
+          </tr></table>
+          <![endif]-->
+          <!--[if !mso]><!-->
+          <div class="sec-head"><span class="sec-badge">⚠ MED</span><div class="sec-title"><a href="https://foresiet.com/blog/ai-security-incidents-attack-paths-april-2026/">泄露模型权重遭地下论坛系统性越狱测试</a></div></div>
+          <!--<![endif]-->
+          <div class="sec-blurb">缺乏推理时安全基础设施的裸模型权重对对抗提示抵抗力大幅下降，研究人员记录了多种可绕过生产 API 拒绝策略的提示模式。建议避免使用来源不明的模型权重，评估第三方微调模型安全合规性。</div>
+        </div>
+
+        <div class="sec-item medium" style="padding:11px 12px;margin-bottom:9px;border:1px solid #c47820;background:#1a1508;">
+          <!--[if mso]>
+          <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:4px;width:100%;"><tr valign="top">
+            <td style="white-space:nowrap;padding-right:8px;"><span style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.12em;font-weight:700;padding:3px 7px;background:#ffb02e;color:#0a0e0a;display:inline-block;">⚠ MED</span></td>
+            <td><a href="https://foresiet.com/blog/ai-security-incidents-attack-paths-april-2026/" style="font-family:'Noto Sans SC',sans-serif;font-weight:600;font-size:13.5px;line-height:1.3;color:#d4e0d4;text-decoration:none;">AI 工具滥用月均 520 起，成 Agentic AI 首要威胁</a></td>
+          </tr></table>
+          <![endif]-->
+          <!--[if !mso]><!-->
+          <div class="sec-head"><span class="sec-badge">⚠ MED</span><div class="sec-title"><a href="https://foresiet.com/blog/ai-security-incidents-attack-paths-april-2026/">AI 工具滥用月均 520 起，成 Agentic AI 首要威胁</a></div></div>
+          <!--<![endif]-->
+          <div class="sec-blurb">工具滥用超越提示注入（450起/月）成为 Agentic AI 环境最主要风险，集中于自动化欺诈和数据外泄场景。建议实施工具调用白名单控制、审计日志和异常检测。</div>
+        </div>
+
+        <div class="sec-item low" style="padding:11px 12px;margin-bottom:0;border:1px solid #6a7acc;background:#0e1020;">
+          <!--[if mso]>
+          <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:4px;width:100%;"><tr valign="top">
+            <td style="white-space:nowrap;padding-right:8px;"><span style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.12em;font-weight:700;padding:3px 7px;background:#8aa4ff;color:#0a0e0a;display:inline-block;">ⓘ LOW</span></td>
+            <td><a href="https://foresiet.com/blog/ai-security-incidents-attack-paths-april-2026/" style="font-family:'Noto Sans SC',sans-serif;font-weight:600;font-size:13.5px;line-height:1.3;color:#d4e0d4;text-decoration:none;">报告：AI 辅助攻击将侦察效率提升3-5倍</a></td>
+          </tr></table>
+          <![endif]-->
+          <!--[if !mso]><!-->
+          <div class="sec-head"><span class="sec-badge">ⓘ LOW</span><div class="sec-title"><a href="https://foresiet.com/blog/ai-security-incidents-attack-paths-april-2026/">报告：AI 辅助攻击将侦察效率提升3-5倍</a></div></div>
+          <!--<![endif]-->
+          <div class="sec-blurb">安全机构报告显示威胁行为者借助 AI 将网络侦察效率提升 3-5 倍，漏洞开发周期显著缩短，数据盗取目标更精准。建议安全团队更新威胁情报策略，关注 AI 辅助攻击的 TTPs 特征指标。</div>
+        </div>
+
+      </div>
+      <!--[if mso]></td></tr></table><![endif]-->
+    </div>
+  </section>
+
+  <!--[if mso]>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:36px;padding-top:16px;border-top:1px solid #2a382a;font-size:10px;color:#a0b8a0;letter-spacing:.08em;text-transform:uppercase;">
+  <tr><td style="color:#a0b8a0;"><span style="color:#7fffd4;">$</span> exit 0</td><td align="right" style="color:#a0b8a0;">End of Issue · 次日更新</td></tr>
+  </table>
+  <![endif]-->
+  <!--[if !mso]><!-->
+  <div class="footer">
+    <span><span class="prompt">$</span> exit 0</span>
+    <span>End of Issue · 次日更新</span>
+  </div>
+  <!--<![endif]-->
+
+</div>
+<!--[if mso]></td></tr></table><![endif]-->
+</body>
+</html>
