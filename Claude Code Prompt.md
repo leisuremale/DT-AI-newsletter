@@ -53,7 +53,7 @@
 - `name`: skill 名（小写连字符）
 - `blurb`: 一句话描述（中文，≤50 字）
 - `uses`: 使用次数（如 `12.3k`）
-- `author`: 作者 handle（如 `@jwang`）
+- `author`: 作者 handle（如 `·jwang`，用 · 号不用 @，避免 Outlook 自动识别超链接）
 
 ### 04 Claude Code 技巧（5 条）
 - `tip`: 标题（中文，≤20 字，可含 `<code>` 关键字）
@@ -84,11 +84,15 @@
 ## 输出要求
 
 1. **单一自包含 HTML 文件**：所有样式内联，无外部依赖（字体通过 Google Fonts CDN 加载）
-2. **完全照搬下方模板的结构和样式**，只替换数据内容
-3. **masthead 中的期号自增**（如模板是第 047 期，今日就是 048）
-4. **日期使用当前真实日期**，格式 `YYYY / MM / DD`
-5. **token bar 宽度**根据 `bar_pct` 百分比动态计算
-6. **severity 颜色**：high=红、medium=黄、low=蓝
+2. **完全照搬模板的双布局结构**（MSO Outlook + iOS/现代客户端），只替换数据内容
+   - Outlook：`<!--[if mso]>` table 布局
+   - iOS/浏览器：`<!--[if !mso]><!-->` CSS flex/grid 布局
+   - 所有颜色用十六进制，不用 CSS `var()`
+3. **panel-hd 只显示编号和标题**，不要右侧 tag 注释（不含 `<span class="tag">`）
+4. **masthead 中的期号**从 `issue_counter.txt` 读取并加 1
+5. **日期使用当前真实日期**，格式 `YYYY / MM / DD`；tagline 下方加 14px 空行
+6. **token bar 宽度**根据 `bar_pct` 百分比动态计算
+7. **severity 颜色**：high=红、medium=黄、low=蓝
 
 ## HTML 模板（完整粘贴，改内容不改结构）
 
@@ -120,8 +124,8 @@ claude "读取 AI Newsletter Terminal.html 作为模板，搜集今日（$(date 
 
 ```json
 {
-  "issue": 48,
-  "date": "2026 / 04 / 25",
+  "issue": 49,
+  "date": "2026 / 04 / 27",
   "news": [
     { "title": "", "blurb": "", "source": "", "time": "2h" }
   ],
@@ -129,7 +133,7 @@ claude "读取 AI Newsletter Terminal.html 作为模板，搜集今日（$(date 
     { "repo": "owner/name", "blurb": "", "stars": "+4.2k", "total": "38.1k", "lang": "TypeScript" }
   ],
   "skills": [
-    { "name": "skill-name", "blurb": "", "uses": "12.3k", "author": "@handle" }
+    { "name": "skill-name", "blurb": "", "uses": "12.3k", "author": "·handle" }
   ],
   "tips": [
     { "tip": "", "body": "" }
